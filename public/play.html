@@ -69,6 +69,7 @@ details .in{padding:0 16px 14px;font:400 16px/1.48 var(--bd)}
 .opts{display:grid;gap:10px}
 .opt{display:grid;grid-template-columns:46px 1fr;gap:12px;align-items:start;text-align:left;padding:14px;border-radius:18px;background:var(--cream);color:var(--ink);box-shadow:0 0 0 0 transparent;transition:box-shadow .15s,transform .1s,opacity .2s}
 .opt:active{transform:scale(.985)}
+.opt:disabled{cursor:default}
 .opt .l{width:46px;height:46px;border-radius:13px;display:grid;place-items:center;background:var(--bc);color:#fff;font:800 24px var(--hd)}
 .opt .t{font:800 18px/1.15 var(--hd);margin-top:2px}
 .opt .d{font:500 14px/1.35 var(--bd);color:var(--muted);margin-top:4px}
@@ -115,111 +116,139 @@ const ls={get(k){try{return localStorage.getItem(k)}catch(e){return null}},set(k
 let device=ls.get('de.device');if(!device){device=Array.from(crypto.getRandomValues(new Uint8Array(10)),x=>x.toString(16).padStart(2,'0')).join('');ls.set('de.device',device)}
 const P=new URLSearchParams(location.search);
 let code=(P.get('c')||ls.get('de.code')||'').toUpperCase().replace(/[^A-Z0-9]/g,'');
-let team=null,state=null,teamVote=null,offset=0,lastV=null,lastRevealKey=null,pending=null,pendingAt=0,errMsg='',polling=false,timerId=0;
-function loadTeam(){const t=ls.get('de.team.'+code);team=t===null||t===''?null:+t}
-if(code)loadTeam();
+let team=null,myName=null,state=null,tv=null,nv=0,offset=0,lastV=null,lastRevealKey=null,sent=null,sentAt=0,errMsg='',polling=false,busy=false;
+const GOLD='#E2B85A';
+function loadMe(){const t=ls.get('de.team.'+code);team=t===null||t===''?null:+t;myName=ls.get('de.name.'+code)}
+if(code)loadMe();
+const IND=()=>state&&state.mode==='ind';
 
 async function api(path,opts){const r=await fetch('/api'+path,Object.assign({cache:'no-store'},opts||{}));let j={};try{j=await r.json()}catch(e){}if(!r.ok){const e=new Error(j.error||'http');e.status=r.status;throw e}return j}
 const post=(p,b)=>api(p,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(b)});
-function mark(ok){dot.className='dot '+(ok?'ok':'bad')}
+function mark(ok){dot.className='dot '+(ok?'ok':'bad');dot.title=ok?'Conectado':'Sin conexión'}
 
 /* ── pantalla: código ── */
 function rCode(msg){pill.innerHTML='';app.innerHTML=`<div class="fade"><div class="eyebrow" style="margin-top:20px">MBA · Decisiones Estratégicas y Marketing</div><h1>Entra a la sala</h1>
- <p class="muted">Escribe el código que aparece en la pantalla del profesor.</p>
- <form class="field" id="f"><input id="ci" maxlength="6" autocomplete="off" autocapitalize="characters" placeholder="CÓDIGO" value="${esc(code)}"><button class="btn">Entrar</button></form>
+ <p class="muted">Escribe el código de 4 letras que aparece en la pantalla del profesor.</p>
+ <form class="field" id="f"><input id="ci" maxlength="6" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="CÓDIGO" value="${esc(code)}" aria-label="Código de la sala"><button class="btn">Entrar</button></form>
  ${msg?`<div class="err">${esc(msg)}</div>`:''}</div>`;
- document.getElementById('f').onsubmit=e=>{e.preventDefault();const v=document.getElementById('ci').value.toUpperCase().replace(/[^A-Z0-9]/g,'');if(!v)return;code=v;ls.set('de.code',code);history.replaceState(null,'','?c='+code);loadTeam();lastV=null;poll(true)}}
+ const f=document.getElementById('f'),ci=document.getElementById('ci');
+ f.onsubmit=e=>{e.preventDefault();const v=ci.value.toUpperCase().replace(/[^A-Z0-9]/g,'');if(v.length<4){ci.focus();return}code=v;ls.set('de.code',code);history.replaceState(null,'','?c='+code);loadMe();lastV=null;app.innerHTML='<div class="wait"><div class="pulse"></div><p class="muted">Conectando…</p></div>';poll(true)}}
 
-/* ── pantalla: equipo ── */
+/* ── pantalla: equipo (modo equipos) ── */
 function rTeam(){pill.innerHTML='';app.innerHTML=`<div class="fade"><div class="eyebrow" style="margin-top:14px">Sala ${esc(code)}</div><h1>¿Cuál es tu equipo?</h1>
  <p class="muted">Pueden entrar varios celulares por equipo. Cuenta el último voto que envíe cualquiera de ustedes.</p>
  <div class="teams">${(state.teams||[]).map((t,k)=>`<button class="team" data-k="${k}" style="--tc:${t.c}"><i></i>${esc(t.name)}</button>`).join('')}</div></div>`;
- app.querySelectorAll('.team').forEach(b=>b.onclick=async()=>{team=+b.dataset.k;ls.set('de.team.'+code,team);ls.set('de.code',code);lastV=null;
-  try{await post('/join',{code,team,device})}catch(e){}poll(true)})}
+ app.querySelectorAll('.team').forEach(b=>b.onclick=async()=>{if(busy)return;busy=true;team=+b.dataset.k;ls.set('de.team.'+code,team);ls.set('de.code',code);lastV=null;
+  b.style.boxShadow='inset 0 0 0 2px var(--tc)';try{await post('/join',{code,team,device})}catch(e){}busy=false;render()})}
 
-function myTeam(){return state&&state.teams&&team!=null?state.teams[team]:null}
-function rankOf(){const tot=state.totals||[];const arr=(state.teams||[]).map((t,k)=>({...t,k,s:tot[k]||0})).sort((a,b)=>b.s-a.s);let r=0;arr.forEach((o,i)=>{if(i===0||o.s<arr[i-1].s)r=i+1;o.r=r});return arr}
-function renderPill(){const t=myTeam();if(!t){pill.innerHTML='';return}const s=(state.totals||[])[team]||0;
- pill.innerHTML=`<button class="tpill" id="tp" style="--tc:${t.c}"><i></i><span>${esc(t.name)}</span><b>${s}</b></button>`}
+/* ── pantalla: nombre (modo individual) ── */
+function rName(msg){pill.innerHTML='';app.innerHTML=`<div class="fade"><div class="eyebrow" style="margin-top:14px">Sala ${esc(code)} · voto individual</div><h1>¿Cómo te llamas?</h1>
+ <p class="muted">Escribe tu nombre y apellido: así aparecerás en el ranking de la clase.</p>
+ <form id="nf" style="margin-top:16px"><input id="ni" maxlength="24" autocomplete="name" autocapitalize="words" placeholder="Nombre Apellido" value="${esc(myName||'')}" aria-label="Tu nombre"
+  style="width:100%;height:58px;border-radius:16px;border:0;background:var(--cream);color:var(--ink);padding:0 18px;font:700 20px var(--bd)">
+  <button class="btn block" style="margin-top:10px" id="nb">Entrar al juego</button></form>${msg?`<div class="err">${esc(msg)}</div>`:''}</div>`;
+ const ni=document.getElementById('ni');setTimeout(()=>ni.focus(),50);
+ document.getElementById('nf').onsubmit=async e=>{e.preventDefault();const n=ni.value.replace(/\s+/g,' ').trim();if(n.length<2){ni.focus();return}if(busy)return;busy=true;const nb=document.getElementById('nb');nb.textContent='Entrando…';
+  try{await post('/join',{code,pid:device,name:n});myName=n;ls.set('de.name.'+code,n);ls.set('de.code',code);lastV=null;busy=false;render()}
+  catch(err){busy=false;rName(err.status===404?'La sala ya no existe. Revisa el código.':'No se pudo entrar. Revisa tu conexión e intenta de nuevo.')}}}
+
+/* ── quién soy ── */
+function me(){if(!state)return null;if(IND())return myName?{id:device,name:myName,c:GOLD}:null;const t=state.teams&&team!=null?state.teams[team]:null;return t?{id:String(team),name:t.name,c:t.c}:null}
+function myScore(){const m=me();return m&&state.totals?(state.totals[m.id]||0):0}
+function rankList(){if(IND())return (state.rank||[]).map(o=>({...o,c:o.id===device?GOLD:'#A9B3C7'}));
+ const tot=state.totals||{};const arr=(state.teams||[]).map((t,k)=>({...t,id:String(k),s:tot[k]||0})).sort((a,b)=>b.s-a.s);let r=0;arr.forEach((o,i)=>{if(i===0||o.s<arr[i-1].s)r=i+1;o.r=r});return arr}
+function renderPill(){const m=me();if(!m){pill.innerHTML='';return}
+ pill.innerHTML=`<button class="tpill" id="tp" style="--tc:${m.c}" title="${IND()?'Cambiar nombre':'Cambiar de equipo'}"><i></i><span>${esc(m.name)}</span><b>${myScore()}</b></button>`}
+function changeMe(){if(IND()){rName()}else{ls.del('de.team.'+code);team=null;rTeam()}}
 
 /* ── pantalla: espera ── */
-function rWait(){const t=myTeam(),b=state.block;
- app.innerHTML=`<div class="wait fade" style="--tc:${t.c}"><div class="pulse"></div>
+function rWait(){const m=me(),b=state.block;
+ app.innerHTML=`<div class="wait fade" style="--tc:${m.c}"><div class="pulse"></div>
  ${state.phase==='intro'&&b?`<div class="eyebrow">Próximo bloque</div><h1 style="color:${b.l}">${esc(b.n)} · ${esc(b.name)}</h1><p class="muted">${esc(b.sub||'')}. Miren la pantalla: el profesor repasa el concepto antes de empezar.</p>`
-  :`<div class="eyebrow">¡Listo!</div><h1>Estás en ${esc(t.name)}</h1><p class="muted">Espera a que el profesor inicie el juego. Esta pantalla cambiará sola.</p>`}
- <button class="link" id="chg">Cambiar de equipo</button></div>`;
- document.getElementById('chg').onclick=changeTeam}
-function changeTeam(){ls.del('de.team.'+code);team=null;rTeam()}
+  :`<div class="eyebrow">¡Listo!</div><h1>${IND()?'Hola, '+esc(m.name.split(' ')[0]):'Estás en '+esc(m.name)}</h1><p class="muted">Espera a que el profesor inicie el juego. Esta pantalla cambiará sola; no hace falta recargar.</p>`}
+ <button class="link" id="chg">${IND()?'Corregir mi nombre':'Cambiar de equipo'}</button></div>`;
+ document.getElementById('chg').onclick=changeMe}
 
 /* ── pantalla: caso ── */
+const vKey=()=>'de.v.'+code+'.'+state.i+'.'+(IND()?device:'t'+team);
 function remaining(){if(!state.endsAt)return state.timed?(state.running?null:state.remaining):null;return Math.max(0,(state.endsAt-(Date.now()+offset))/1000)}
 function closed(){if(state.revealed)return true;if(!state.timed)return false;const r=remaining();return r!==null&&r<=0}
-function curVote(){return pending&&Date.now()-pendingAt<4000?pending:teamVote}
-function rCase(){const t=myTeam(),b=state.block||{},v=curVote(),cl=closed();
- app.innerHTML=`<div class="fade" style="--tc:${t.c};--bc:${b.c};--bl:${b.l}">
+function curVote(){if(sent&&sent.i===state.i&&Date.now()-sentAt<5000)return sent.opt;if(!IND()&&tv)return tv[String(team)]||null;return ls.get(vKey())}
+function rCase(){const m=me(),b=state.block||{},v=curVote(),cl=closed();
+ app.innerHTML=`<div class="fade" style="--tc:${m.c};--bc:${b.c};--bl:${b.l}">
   <div class="meta"><span class="chip"><i>${esc(b.n)}</i>${esc(b.name)}</span><span class="count">Caso ${state.i+1} / ${state.n}</span></div>
   ${state.timed?`<div class="tbar" id="tb"><div></div></div><div class="ttxt"><span id="tl">Tiempo</span><b id="tv"></b></div>`:''}
   <div class="emp">${esc(state.e)}</div><div class="sector">${esc(state.s)}</div>
   <details><summary>Ver planteamiento y datos</summary><div class="in">${esc(state.sit)}<div class="datos">${(state.dat||[]).map(d=>`<div class="dato"><small>${esc(d[0])}</small><b>${esc(d[1])}</b></div>`).join('')}</div></div></details>
   <div class="q">${esc(state.q)}</div>
-  <div class="opts ${cl?'closed':''}" id="opts">${(state.opts||[]).map(o=>`<button class="opt ${v===o.id?'sel':''}" data-id="${o.id}"><span class="l">${o.L}</span><span><div class="t">${esc(o.t)}</div><div class="d">${esc(o.d)}</div></span></button>`).join('')}</div>
-  <div class="status ${v?'ok':''}" id="st"></div></div>`;
+  <div class="opts ${cl?'closed':''}" id="opts">${(state.opts||[]).map(o=>`<button class="opt ${v===o.id?'sel':''}" data-id="${o.id}" ${cl?'disabled':''}><span class="l">${o.L}</span><span><div class="t">${esc(o.t)}</div><div class="d">${esc(o.d)}</div></span></button>`).join('')}</div>
+  <div class="status ${v?'ok':''}" id="st" aria-live="polite"></div></div>`;
  app.querySelectorAll('.opt').forEach(el=>el.onclick=()=>vote(el.dataset.id));
  paintStatus();tickTimer()}
-function paintStatus(){const st=document.getElementById('st');if(!st)return;const v=curVote(),o=(state.opts||[]).find(x=>x.id===v),cl=closed();
+function paintStatus(){const st=document.getElementById('st');if(!st)return;const v=curVote(),o=(state.opts||[]).find(x=>x.id===v),cl=closed();const who=IND()?'Tu voto':'Voto del equipo';
  st.className='status '+(v?'ok':'');
- st.innerHTML=errMsg?`<span style="color:var(--errL)">${esc(errMsg)}</span>`:cl?(o?`Tiempo terminado. Voto del equipo: <b>${o.L} · ${esc(o.t)}</b>`:'Tiempo terminado. Tu equipo no votó.'):o?`Voto del equipo: <b>${o.L} · ${esc(o.t)}</b><br><span class="muted" style="font-size:13px">Pueden cambiarlo hasta que termine el tiempo.</span>`:'Toca una opción para votar por tu equipo.';
- app.querySelectorAll('.opt').forEach(el=>el.classList.toggle('sel',el.dataset.id===v));const os=document.getElementById('opts');if(os)os.classList.toggle('closed',cl)}
-async function vote(id){if(closed())return;errMsg='';pending=id;pendingAt=Date.now();paintStatus();if(navigator.vibrate)navigator.vibrate(15);
- try{const r=await post('/vote',{code,team,i:state.i,opt:id,device});teamVote=r.teamVote;pending=null;mark(true)}
- catch(e){pending=null;errMsg=e.message==='closed'?'La votación de este caso ya se cerró.':'No se pudo enviar el voto. Revisa tu conexión e intenta de nuevo.';mark(e.status?true:false)}
+ st.innerHTML=errMsg?`<span style="color:var(--errL)">${esc(errMsg)}</span>`
+  :cl?(o?`Tiempo terminado. ${who}: <b>${o.L} · ${esc(o.t)}</b><br><span class="muted" style="font-size:13px">Mira la pantalla: el profesor va a revelar la respuesta.</span>`:`Tiempo terminado. ${IND()?'No alcanzaste a votar.':'Tu equipo no votó.'}`)
+  :o?`${who}: <b>${o.L} · ${esc(o.t)}</b> ✓<br><span class="muted" style="font-size:13px">Puedes cambiarlo hasta que termine el tiempo.${!IND()&&nv?` · ${nv} equipo${nv===1?' ya votó':'s ya votaron'}`:IND()&&nv?` · ${nv} voto${nv===1?'':'s'} en la sala`:''}</span>`
+  :`Toca una opción para votar${IND()?'':' por tu equipo'}.${nv?`<br><span class="muted" style="font-size:13px">${nv} ${IND()?'compañero'+(nv===1?' ya votó':'s ya votaron'):'equipo'+(nv===1?' ya votó':'s ya votaron')}</span>`:''}`;
+ app.querySelectorAll('.opt').forEach(el=>{el.classList.toggle('sel',el.dataset.id===v);el.disabled=cl});const os=document.getElementById('opts');if(os)os.classList.toggle('closed',cl)}
+async function vote(id){if(closed())return;errMsg='';sent={i:state.i,opt:id};sentAt=Date.now();paintStatus();if(navigator.vibrate)navigator.vibrate(15);
+ const body=IND()?{code,voter:device,i:state.i,opt:id}:{code,team,i:state.i,opt:id};
+ try{await post('/vote',body);ls.set(vKey(),id);sentAt=Date.now();mark(true)}
+ catch(e){sent=null;mark(!!e.status);
+  if(e.message==='not_registered'){ls.del('de.name.'+code);myName=null;return rName('Vuelve a escribir tu nombre para seguir jugando.')}
+  errMsg=e.message==='closed'?'La votación de este caso ya se cerró.':'No se pudo enviar el voto. Revisa tu conexión e intenta de nuevo.'}
  paintStatus()}
-function tickTimer(){const tb=document.getElementById('tb');if(!tb)return;const r=remaining();const tot=state.timedTotal||null;
- let left=r===null?state.remaining:r;if(left==null)left=0;const tv=document.getElementById('tv'),tl=document.getElementById('tl');
- tv.textContent=Math.ceil(left)+' s';tl.textContent=state.running?'Tiempo restante':(left>0?'En pausa':'¡Tiempo!');
- const base=state.total||state.base||Math.max(left,1);tb.firstChild.style.width=Math.min(100,left/base*100)+'%';tb.classList.toggle('warn',left<=10)}
+function tickTimer(){const tb=document.getElementById('tb');if(!tb)return;const r=remaining();
+ let left=r===null?state.remaining:r;if(left==null)left=0;const tvv=document.getElementById('tv'),tl=document.getElementById('tl');
+ tvv.textContent=Math.ceil(left)+' s';tl.textContent=state.running?'Tiempo restante':(left>0?'En pausa':'¡Tiempo!');
+ const base=state.total||Math.max(left,1);tb.firstChild.style.width=Math.min(100,left/base*100)+'%';tb.classList.toggle('warn',left<=10)}
 
 /* ── pantalla: revelado ── */
-function rReveal(){const t=myTeam(),b=state.block||{},sc=state.sc||{},v=teamVote,p=v?(sc[v]||0):null;
+function rReveal(){const m=me(),b=state.block||{},sc=state.sc||{};const v=ls.get(vKey())||(sent&&sent.i===state.i?sent.opt:null)||(!IND()&&tv?tv[String(team)]:null);
+ const pts=state.pts&&m?state.pts[m.id]:undefined;const vv=pts===undefined?(v?(sc[v]||0):null):(v||pts>0?pts:null);
  const best=(state.opts||[]).find(o=>sc[o.id]===100),mine=(state.opts||[]).find(o=>o.id===v);
- const cls=p===100?'ok':p===40?'acc':p===0?'err':'none';
- app.innerHTML=`<div class="fade" style="--tc:${t.c};--bc:${b.c}">
+ const cls=vv===100?'ok':vv===40?'acc':vv===0?'err':'none';
+ const rl=rankList(),myR=rl.find(o=>o.id===(m&&m.id));
+ app.innerHTML=`<div class="fade" style="--tc:${m.c};--bc:${b.c}">
   <div class="meta"><span class="chip"><i>${esc(b.n)}</i>${esc(b.name)}</span><span class="count">Caso ${state.i+1} / ${state.n}</span></div>
-  <div class="res ${cls}" style="margin-top:14px"><small>${p===100?'Decisión óptima':p===40?'Decisión aceptable':p===0?'Decisión errónea':'Sin voto'}</small>
-   <div class="pts">${p===null?'0':'+'+p}</div><p>${mine?`Votaron ${mine.L} · ${esc(mine.t)}`:'Tu equipo no votó en este caso'}</p></div>
+  <div class="res ${cls}" style="margin-top:14px"><small>${vv===100?'Decisión óptima':vv===40?'Decisión aceptable':vv===0?'Decisión errónea':'Sin voto'}</small>
+   <div class="pts">${vv?'+'+vv:'0'}</div><p>${mine?`${IND()?'Votaste':'Votaron'} ${mine.L} · ${esc(mine.t)}`:IND()?'No votaste en este caso':'Tu equipo no votó en este caso'}</p></div>
   <div class="best"><div class="eyebrow" style="color:var(--okL)">La decisión óptima</div><div class="bl"><i>${best?best.L:''}</i><b>${best?esc(best.t):''}</b></div>
   <p style="margin:0">${esc(state.why||'')}</p>
-  ${mine&&best&&mine.id!==best.id&&state.n2&&state.n2[mine.id]?`<p class="muted" style="margin-top:10px"><b style="color:var(--paper)">Sobre su opción:</b> ${esc(state.n2[mine.id])}</p>`:''}
+  ${mine&&best&&mine.id!==best.id&&state.n2&&state.n2[mine.id]?`<p class="muted" style="margin-top:10px"><b style="color:var(--paper)">Sobre ${IND()?'tu':'su'} opción:</b> ${esc(state.n2[mine.id])}</p>`:''}
   <div class="key"><small>Concepto clave</small>${esc(state.key||'')}</div></div>
-  <p class="muted" style="text-align:center;margin-top:18px">Puntaje del equipo: <b style="color:var(--tc)">${(state.totals||[])[team]||0}</b> · Siguiente caso en la pantalla</p></div>`;
- const k=state.i+':'+code;if(lastRevealKey!==k){lastRevealKey=k;if(navigator.vibrate)navigator.vibrate(p===100?[40,60,40]:30)}}
+  <p class="muted" style="text-align:center;margin-top:18px">${IND()?'Tu puntaje':'Puntaje del equipo'}: <b style="color:var(--tc)">${myScore()}</b>${myR?` · vas en el <b style="color:var(--paper)">${myR.r}.º lugar</b> de ${rl.length}`:''}<br>El siguiente caso aparecerá solo.</p></div>`;
+ const k=state.i+':'+code;if(lastRevealKey!==k){lastRevealKey=k;if(navigator.vibrate)navigator.vibrate(vv===100?[40,60,40]:30)}}
 
 /* ── pantalla: final ── */
-function rFinal(){const t=myTeam(),arr=rankOf(),me=arr.find(o=>o.k===team);
- app.innerHTML=`<div class="fade" style="--tc:${t.c}"><div class="eyebrow" style="margin-top:10px">Resultados finales</div>
-  <h1>${me?`${me.r}.º lugar`:'Fin del juego'}</h1><p class="muted">${esc(t.name)} terminó con <b style="color:var(--tc)">${me?me.s:0}</b> puntos.</p>
-  <div class="rank">${arr.map(o=>`<div class="rk ${o.k===team?'me':''}" style="--tc:${o.c}"><b>${o.r}</b><span>${esc(o.name)}</span><em>${o.s}</em></div>`).join('')}</div></div>`}
+function rFinal(){const m=me(),arr=rankList(),mine=arr.find(o=>o.id===m.id);const top=arr.slice(0,10);const inTop=top.some(o=>o.id===m.id);
+ app.innerHTML=`<div class="fade" style="--tc:${m.c}"><div class="eyebrow" style="margin-top:10px">Resultados finales</div>
+  <h1>${mine?`${mine.r}.º lugar`:'Fin del juego'}</h1><p class="muted">${IND()?esc(m.name)+', terminaste':esc(m.name)+' terminó'} con <b style="color:var(--tc)">${mine?mine.s:0}</b> puntos${IND()?` · ${arr.length} participantes`:''}.</p>
+  <div class="rank">${top.map(o=>`<div class="rk ${o.id===m.id?'me':''}" style="--tc:${o.id===m.id?m.c:o.c}"><b>${o.r}</b><span>${esc(o.name)}</span><em>${o.s}</em></div>`).join('')}
+  ${mine&&!inTop?`<div class="muted" style="text-align:center">…</div><div class="rk me" style="--tc:${m.c}"><b>${mine.r}</b><span>${esc(mine.name)}</span><em>${mine.s}</em></div>`:''}</div>
+  <p class="muted" style="text-align:center;margin-top:22px">¡Gracias por jugar!</p></div>`}
 
 /* ── ciclo ── */
-function render(){if(!state)return;if(team==null||!myTeam())return rTeam();renderPill();
+function render(){if(!state)return;if(!me())return IND()?rName():rTeam();renderPill();
  if(state.phase==='case')return state.revealed?rReveal():rCase();
  if(state.phase==='final')return rFinal();
  return rWait()}
 async function poll(force){if(!code){rCode();return}if(polling&&!force)return;polling=true;
- try{const q=new URLSearchParams({code});if(team!=null)q.set('team',team);const r=await api('/state?'+q);mark(true);
-  offset=r.serverNow-Date.now();const prevI=state&&state.i,prevPhase=state&&state.phase,prevRev=state&&state.revealed;
-  const ns=r.state;if(state&&ns.phase==='case'&&prevPhase==='case'&&prevI===ns.i&&state.base)ns.base=state.base;
-  if(ns.phase==='case'&&!ns.base)ns.base=ns.remaining||null;
-  if(!state||ns.i!==prevI||ns.phase!==prevPhase)errMsg='';
-  state=ns;teamVote=r.teamVote;
-  if(state.v!==lastV||force){lastV=state.v;render()}else if(state.phase==='case'&&!state.revealed){paintStatus();tickTimer();renderPill()}
+ try{const r=await api('/state?code='+encodeURIComponent(code));mark(true);
+  offset=r.serverNow-Date.now();const prev=state;const ns=r.state;
+  if(!prev||ns.i!==prev.i||ns.phase!==prev.phase)errMsg='';
+  state=ns;tv=r.tv;nv=r.nv||0;
+  const typing=document.activeElement&&document.activeElement.tagName==='INPUT';
+  if((state.v!==lastV||force)&&!typing){lastV=state.v;render()}
+  else if(state.phase==='case'&&!state.revealed&&document.getElementById('st')){paintStatus();tickTimer();renderPill()}
  }catch(e){mark(false);if(e.status===404){ls.del('de.code');state=null;rCode('No encontramos esa sala. Revisa el código en la pantalla.')}}
  finally{polling=false}}
-setInterval(()=>{if(!document.hidden)poll()},2000);
-setInterval(()=>{if(state&&state.phase==='case'&&!state.revealed){tickTimer();if(closed())paintStatus()}},500);
+setInterval(()=>{if(!document.hidden)poll()},2500);
+setInterval(()=>{if(state&&state.phase==='case'&&!state.revealed&&document.getElementById('st')){tickTimer();if(closed())paintStatus()}},500);
 document.addEventListener('visibilitychange',()=>{if(!document.hidden)poll(true)});
-pill.addEventListener('click',e=>{if(e.target.closest('#tp')&&state&&state.phase!=='case')changeTeam()});
-if(code)poll(true);else rCode();
+pill.addEventListener('click',e=>{if(e.target.closest('#tp')&&state&&state.phase!=='case')changeMe()});
+if(code){app.innerHTML='<div class="wait"><div class="pulse"></div><p class="muted">Conectando con la sala…</p></div>';poll(true)}else rCode();
 })();
 </script>
 </body>
