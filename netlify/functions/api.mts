@@ -73,6 +73,20 @@ async function readVotes(st: Store, code: string, i: number) {
   for (const [v, o] of Object.entries(best)) out[v] = o.opt;
   return out;
 }
+/* Igual que readVotes, pero con la hora (ms del servidor) del voto vigente: sirve para desempatar por rapidez */
+async function readVoteTimes(st: Store, code: string, i: number) {
+  const { blobs } = await st.list({ prefix: `${code}/v/${i}/` });
+  const out: Record<string, { opt: string; ts: number }> = {};
+  for (const b of blobs) {
+    const parts = b.key.split("/");
+    const voter = parts[3];
+    const [tsRaw, opt] = (parts[4] || "").split("-");
+    const ts = parseInt(tsRaw, 36) || 0;
+    if (!voter || !opt) continue;
+    if (!out[voter] || ts >= out[voter].ts) out[voter] = { opt, ts };
+  }
+  return out;
+}
 
 async function writeVote(st: Store, code: string, i: number, voter: string, opt: string | null, now: number) {
   const prefix = `${code}/v/${i}/${voter}/`;
@@ -216,7 +230,10 @@ export default async (req: Request, _context: Context) => {
       const out: any = { votes: {}, present: {}, players: [], serverNow: now };
       const iParam = url.searchParams.get("i");
       const jobs: Promise<unknown>[] = [];
-      if (iParam !== null && iParam !== "") jobs.push(readVotes(st, code, Number(iParam)).then((v) => (out.votes = v)));
+      if (iParam !== null && iParam !== "") jobs.push(readVoteTimes(st, code, Number(iParam)).then((v) => {
+        out.vt = {};
+        for (const [k, x] of Object.entries(v)) { out.votes[k] = x.opt; out.vt[k] = x.ts; }
+      }));
       if (mode === "ind") jobs.push(readPlayers(st, code).then((p) => (out.players = p)));
       else jobs.push(st.list({ prefix: `${code}/p/` }).then(({ blobs }) => {
         // solo cuentan los celulares que dieron señal en los últimos 45 s
