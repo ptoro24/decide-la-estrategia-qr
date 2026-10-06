@@ -85,6 +85,12 @@ async function writeVote(st: Store, code: string, i: number, voter: string, opt:
   await Promise.all(blobs.filter((b) => b.key !== newKey).map((b) => st.delete(b.key)));
 }
 
+const PRESENCE_TTL = 45000;
+async function dropPresence(st: Store, code: string, dev: string) {
+  const { blobs } = await st.list({ prefix: `${code}/p/` });
+  await Promise.all(blobs.filter((b) => b.key.split("/")[3] === dev).map((b) => st.delete(b.key)));
+}
+
 async function readPlayers(st: Store, code: string) {
   const { blobs } = await st.list({ prefix: `${code}/u/` });
   const map: Record<string, string> = {};
@@ -164,7 +170,17 @@ export default async (req: Request, _context: Context) => {
       }
       const team = clean(body.team, 2), dev = clean(body.device, 32);
       if (team === "" || !dev) return json({ error: "bad_request" }, 400);
-      await st.set(`${code}/p/${team}/${dev}`, String(now));
+      await dropPresence(st, code, dev); // si el celular estaba en otro equipo, deja de contar allí
+      await st.set(`${code}/p/${team}/${dev}/${now.toString(36)}`, "1");
+      return json({ ok: true });
+    }
+
+    /* ── Salir de un equipo (celular cambia de equipo o cierra la página) ── */
+    if (route === "leave" && req.method === "POST") {
+      const body = await req.json().catch(() => ({}));
+      const code = code4(body.code), dev = clean(body.device, 32);
+      if (!code || !dev) return json({ error: "bad_request" }, 400);
+      await dropPresence(st, code, dev);
       return json({ ok: true });
     }
 
@@ -203,7 +219,13 @@ export default async (req: Request, _context: Context) => {
       if (iParam !== null && iParam !== "") jobs.push(readVotes(st, code, Number(iParam)).then((v) => (out.votes = v)));
       if (mode === "ind") jobs.push(readPlayers(st, code).then((p) => (out.players = p)));
       else jobs.push(st.list({ prefix: `${code}/p/` }).then(({ blobs }) => {
-        for (const b of blobs) { const t = b.key.split("/")[2]; out.present[t] = (out.present[t] || 0) + 1; }
+        // solo cuentan los celulares que dieron señal en los últimos 45 s
+        for (const b of blobs) {
+          const parts = b.key.split("/");
+          const ts = parseInt(parts[4] || "", 36);
+          if (!ts || now - ts > PRESENCE_TTL) continue;
+          out.present[parts[2]] = (out.present[parts[2]] || 0) + 1;
+        }
       }));
       await Promise.all(jobs);
       return json(out);
