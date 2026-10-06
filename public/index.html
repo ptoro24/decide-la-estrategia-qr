@@ -77,6 +77,9 @@ input{font:inherit}
 .seg{display:inline-flex;padding:5px;border-radius:999px;background:#EBE8DF;gap:4px}
 .seg button{height:44px;padding:0 20px;border-radius:999px;font:600 19px var(--bd);color:var(--muted)}
 .seg button.on{background:var(--navy);color:var(--paper)}
+.seg.tight button{padding:0 13px;font-size:17px}
+.trow{display:flex;gap:26px;flex-wrap:wrap}
+.btn .cd{font-variant-numeric:tabular-nums}
 .mini{font:600 17px var(--bd);color:var(--muted);text-decoration:underline;text-underline-offset:4px;margin-left:14px}
 .cfg .go{display:flex;align-items:center;justify-content:space-between;margin-top:auto;padding-top:18px;border-top:2px solid #E6E1D6}
 .cfg .go .sum{font:500 22px var(--bd);color:var(--muted)}
@@ -86,7 +89,7 @@ input{font:inherit}
 .resume .btn{margin-left:auto}
 
 /* ── HEADER ── */
-.hdr{position:absolute;left:64px;right:64px;top:26px;height:72px;display:flex;align-items:center;gap:22px}
+.hdr{position:absolute;left:64px;right:64px;top:26px;height:72px;display:flex;align-items:center;gap:22px;z-index:10}
 .brand{display:flex;flex-direction:column;gap:6px;margin-right:10px}
 .brand b{font:800 26px var(--hd);letter-spacing:-.3px}
 .brand span{font:700 13px var(--bd);letter-spacing:2.5px;color:var(--mutedL);text-transform:uppercase}
@@ -351,6 +354,32 @@ button.opt:hover{translate:0 -3px}
 .empty{font:500 21px var(--bd);color:var(--mutedL);padding:16px 0}
 .panel.many .brow{grid-template-columns:44px 1fr 2fr 80px 120px;padding:7px 0}
 .panel.many .brow .bn{font-size:20px}.panel.many .brow .bs{font-size:24px}.panel.many .brow .adj button{height:36px;width:50px;font-size:15px}
+
+/* ── RANKING ENTRE CASOS ── */
+.rkscr{position:absolute;inset:0;padding:120px 64px 60px;display:grid;grid-template-columns:600px 1fr;gap:64px}
+.rkscr .h2{font-size:92px;margin:14px 0 18px}
+.rkscr .sub{font:500 26px/1.4 var(--bd);color:var(--mutedL)}
+.rkscr .foot{display:flex;gap:14px;align-items:center;margin-top:40px}
+.lb{display:flex;flex-direction:column;gap:10px;align-self:center}
+.lbr{display:grid;grid-template-columns:56px 1fr 120px 92px 100px;align-items:center;gap:16px;height:var(--h,74px);padding:0 22px;border-radius:18px;background:var(--navy3);box-shadow:inset 0 0 0 1px var(--line);opacity:0;animation:lbin .5s cubic-bezier(.2,.8,.2,1) forwards;position:relative;overflow:hidden}
+@keyframes lbin{from{opacity:0;translate:-40px 0}to{opacity:1;translate:0 0}}
+.lbr .fill{position:absolute;left:0;top:0;bottom:0;background:var(--tc);opacity:.13;width:0;transition:width 1.1s cubic-bezier(.2,.8,.2,1)}
+.lbr>*{position:relative}
+.lbr .ps{font:800 32px var(--hd);color:var(--mutedL)}
+.lbr.p1 .ps{color:var(--gold)}
+.lbr .nm{font:700 26px var(--bd);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:flex;align-items:center;gap:12px}
+.lbr .nm i{width:14px;height:14px;border-radius:50%;background:var(--tc);flex:none}
+.lbr .dl{font:800 22px var(--hd);color:var(--okL);text-align:right}
+.lbr .dl.acc{color:var(--accL)}.lbr .dl.z{color:var(--mutedL);opacity:.5}
+.lbr .mv{font:700 17px var(--bd);text-align:center;color:var(--mutedL)}
+.lbr .mv.up{color:var(--okL)}.lbr .mv.dn{color:var(--errL)}
+.lbr .sc{font:800 36px var(--hd);text-align:right;color:var(--tc);font-variant-numeric:tabular-nums}
+.lbr.p1{box-shadow:inset 0 0 0 2px var(--gold)}
+.lbmore{font:500 20px var(--bd);color:var(--mutedL);text-align:center;margin-top:6px}
+.tbnote{font:500 18px var(--bd);color:var(--mutedL);margin-top:14px}
+.confetti{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:45}
+.crown{display:inline-flex;align-items:center;gap:10px;height:44px;padding:0 18px;border-radius:999px;background:var(--gold);color:var(--navy);font:800 18px var(--bd);letter-spacing:2px;text-transform:uppercase}
+.crown svg{width:22px;height:22px}
 
 /* ── OVERLAY ── */
 #ov{position:absolute;inset:0;z-index:50;background:rgba(10,17,34,.72);backdrop-filter:blur(6px);display:none;place-items:center}
@@ -3098,12 +3127,15 @@ const IC={
  left:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M11 6l-6 6 6 6"/></svg>',
  phone:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="2" width="12" height="20" rx="2.5"/><path d="M11 18h2"/></svg>',
  qric:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><path d="M14 14h3v3M21 14v.01M14 21h7v-4"/></svg>',
+ pause:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M8 5v14M16 5v14"/></svg>',
+ back:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M11 6l-6 6 6 6"/></svg>',
+ trophy:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0V4zM7 6H4a3 3 0 0 0 3 4M17 6h3a3 3 0 0 1-3 4"/></svg>',
  right:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>'
 };
 
 /* ── STATE ── */
-function fresh(){return {phase:'setup',cfg:{nt:4,names:[1,2,3,4,5,6,7,8].map(i=>'Equipo '+i),blocks:BLOCKS.map(b=>b.id),order:'bloque',time:90,intros:true,qr:/^https?:/.test(location.protocol),mode:'team'},mode:'team',players:[],seq:[],i:0,votes:{},hist:{},adj:{},intro:{},revealed:false,tab:'fb'}}
-function load(){try{const s=JSON.parse(localStorage.getItem(KEY));if(s&&s.cfg&&Array.isArray(s.seq)){if(s.cfg.qr===undefined)s.cfg.qr=/^https?:/.test(location.protocol);if(!s.cfg.mode)s.cfg.mode='team';if(!s.mode)s.mode='team';if(!s.players)s.players=[];if(!s.adj)s.adj={};return s}}catch(e){}return null}
+function fresh(){return {phase:'setup',cfg:{nt:4,names:[1,2,3,4,5,6,7,8].map(i=>'Equipo '+i),blocks:BLOCKS.map(b=>b.id),order:'bloque',time:90,intros:true,qr:/^https?:/.test(location.protocol),mode:'team',auto:'next'},mode:'team',players:[],seq:[],i:0,votes:{},hist:{},adj:{},vts:{},rt:{},t0:{},intro:{},revealed:false,tab:'fb'}}
+function load(){try{const s=JSON.parse(localStorage.getItem(KEY));if(s&&s.cfg&&Array.isArray(s.seq)){if(s.cfg.qr===undefined)s.cfg.qr=/^https?:/.test(location.protocol);if(!s.cfg.mode)s.cfg.mode='team';if(!s.cfg.auto)s.cfg.auto='next';if(!s.mode)s.mode='team';if(!s.players)s.players=[];if(!s.adj)s.adj={};['vts','rt','t0'].forEach(k=>{if(!s[k])s[k]={}});return s}}catch(e){}return null}
 function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
 let S=load()||fresh();
 let resumable=false;
@@ -3112,7 +3144,11 @@ const IND=()=>S.mode==='ind';
 const ONLINE=/^https?:/.test(location.protocol);
 function parts(){return IND()?(S.players||[]).map((p,k)=>({id:p.id,name:p.name||'Alumno',c:TEAMC[k%TEAMC.length]})):teams().map((t,k)=>({id:String(k),name:t.name,c:t.c,k}))}
 function totals(){const t={};parts().forEach(p=>t[p.id]=0);Object.values(S.hist).forEach(h=>{if(h)Object.entries(h).forEach(([k,p])=>{if(k in t)t[k]+=p||0})});Object.entries(S.adj||{}).forEach(([k,a])=>{if(k in t)t[k]+=a||0});return t}
-function ranked(){const tot=totals();const o=parts().map(p=>({...p,s:tot[p.id]||0})).sort((a,b)=>b.s-a.s);let r=0;o.forEach((x,i)=>{if(i===0||x.s<o[i-1].s)r=i+1;x.r=r});return o}
+function tbOf(id,upto){let t=0;Object.entries(S.rt||{}).forEach(([i,m])=>{if(upto!=null&&+i>upto)return;if(m&&m[id]!=null)t+=m[id]});return Math.round(t*10)/10}
+function ranked(upto){const tot=upto==null?totals():totalsUpto(upto);const o=parts().map(p=>({...p,s:tot[p.id]||0,tb:tbOf(p.id,upto)})).sort((a,b)=>(b.s-a.s)||(a.tb-b.tb));
+ let r=0;o.forEach((x,i)=>{if(i===0||x.s<o[i-1].s||x.tb>o[i-1].tb)r=i+1;x.r=r});return o}
+function totalsUpto(upto){const t={};parts().forEach(p=>t[p.id]=0);Object.entries(S.hist).forEach(([i,h])=>{if(h&&+i<=upto)Object.entries(h).forEach(([k,p])=>{if(k in t)t[k]+=p||0})});Object.entries(S.adj||{}).forEach(([k,a])=>{if(k in t)t[k]+=a||0});return t}
+const fmtT=x=>x>=60?`${Math.floor(x/60)} min ${Math.round(x%60)} s`:`${Math.round(x)} s`;
 const curCase=()=>CASES[S.seq[S.i]];
 const optsOf=b=>b.opts.map((o,k)=>Object.assign({L:L[k]},o));
 
@@ -3127,14 +3163,15 @@ function qrSVG(text){try{const q=qrcode(0,'M');q.addData(text);q.make();const n=
  return `<svg viewBox="0 0 ${n+2*m} ${n+2*m}" shape-rendering="crispEdges"><rect width="100%" height="100%" fill="#FCFBF8"/><path d="${d}" fill="#101B33"/></svg>`}catch(e){return ''}}
 function qrCard(){return `<div class="qrcard"><div class="qr">${qrSVG(joinURL())}</div><small>Escanea o entra a</small><div class="url">${esc(location.host)}/play.html</div><small>Código de la sala</small><div class="code">${S.room.code}</div></div>`}
 function pubState(){const st={v:Date.now(),mode:S.mode,total:T.total||null,phase:S.phase==='lobby'?'lobby':S.phase,teams:IND()?[]:teams().map(t=>({name:t.name,c:t.c})),totals:totals(),n:S.seq.length,i:S.i};
- if(IND())st.rank=ranked().map(o=>({id:o.id,name:o.name,s:o.s,r:o.r}));
+ st.rank=ranked().map(o=>({id:o.id,name:o.name,s:o.s,r:o.r,c:o.c}));if(S.phase==='rank'){st.pts=S.hist[S.i]||{};st.prev=Object.fromEntries(ranked(S.i-1).map(o=>[o.id,o.r]))}
  if(S.phase==='intro'||S.phase==='case'){const c=curCase(),b=BL[c.b];st.block={n:b.n,name:b.name,sub:b.sub,c:b.c,l:b.l}}
  if(S.phase==='case'){const c=curCase(),b=BL[c.b];Object.assign(st,{e:c.e,s:c.s,sit:c.sit,dat:c.dat,q:b.q,opts:optsOf(b).map(o=>({id:o.id,L:o.L,t:o.t,d:o.d})),revealed:!!S.revealed,timed:!!T.total,running:!!(T.run&&!S.revealed),remaining:T.total?Math.max(0,T.left):null});
   if(S.revealed){st.sc=c.sc;st.why=c.why;st.key=c.key;st.n2=c.n;st.pts=S.hist[S.i]||null}}
  return st}
 function publish(now){if(!S.room)return;clearTimeout(NET.pubT);const go=()=>post('/state',{code:S.room.code,key:S.room.key,state:pubState()}).then(()=>netMark(true)).catch(()=>netMark(false));if(now)return go();NET.pubT=setTimeout(go,120)}
 async function pollOnce(){if(!S.room)return null;const q=new URLSearchParams({code:S.room.code,key:S.room.key,mode:S.mode});if(S.phase==='case')q.set('i',S.i);
- const r=await api('/poll?'+q.toString());netMark(true);NET.present=r.present||{};let ch=false;
+ const r=await api('/poll?'+q.toString());netMark(true);NET.present=r.present||{};if(r.serverNow)NET.off=r.serverNow-Date.now();let ch=false;
+ if(S.phase==='case'&&!S.revealed&&r.vt){S.vts[S.i]=Object.assign(S.vts[S.i]||{},r.vt)}
  if(IND()&&r.players){S.players=S.players||[];for(const p of r.players){const ex=S.players.find(x=>x.id===p.id);if(!ex){S.players.push({id:p.id,name:p.name});ch=true}else if(ex.name!==p.name){ex.name=p.name;ch=true}}
   if(ch){save();if(S.phase==='lobby')paintLobbyPlayers()}}
  if(S.phase==='case'&&!S.revealed&&r.votes){const v=S.votes[S.i]=S.votes[S.i]||{};const nowt=Date.now();
@@ -3162,23 +3199,34 @@ const T={left:0,total:0,run:false,last:0,id:0,done:false};
 function timerStart(){clearInterval(T.id);T.total=S.cfg.time;T.left=T.total;T.done=false;if(!T.total){paintTimer();return}T.run=true;T.last=performance.now();T.id=setInterval(tick,200);paintTimer();publish()}
 function timerStop(){clearInterval(T.id);T.run=false;paintTimer()}
 function timerToggle(){if(!T.total||S.revealed)return;if(T.run){timerStop()}else{if(T.left<=0)return;T.run=true;T.last=performance.now();clearInterval(T.id);T.id=setInterval(tick,200);paintTimer()}publish()}
-function tick(){const n=performance.now();T.left-=(n-T.last)/1000;T.last=n;if(T.left<=0){T.left=0;clearInterval(T.id);T.run=false;if(!T.done){T.done=true;beep(660,.25);setTimeout(()=>beep(440,.5),260);publish()}}paintTimer()}
+function tick(){const n=performance.now();T.left-=(n-T.last)/1000;T.last=n;if(T.left<=0){T.left=0;clearInterval(T.id);T.run=false;if(!T.done){T.done=true;beep(660,.25);setTimeout(()=>beep(440,.5),260);publish();if(S.cfg.auto!=='manual'){const ci=S.i;setTimeout(()=>{if(S.phase==='case'&&!S.revealed&&S.i===ci&&!ov.classList.contains('show'))reveal()},1500)}}}paintTimer()}
 function paintTimer(){const el=$('.timer');if(!el)return;if(!T.total){el.classList.add('off');return}
  if(S.revealed&&S.phase==='case'){el.classList.remove('warn','out');el.classList.add('paused');el.querySelector('.tf').style.strokeDashoffset=0;el.querySelector('span').textContent='✓';el.title='Caso revelado';return}
  const C=2*Math.PI*30,f=el.querySelector('.tf');f.style.strokeDasharray=C;f.style.strokeDashoffset=C*(1-T.left/T.total);
  el.querySelector('span').textContent=Math.ceil(T.left);el.classList.toggle('warn',T.left<=10);el.classList.toggle('out',T.left<=0&&!S.revealed);el.classList.toggle('paused',!T.run&&T.left>0)}
 
+/* ── AVANCE AUTOMÁTICO ── */
+const AUTO_DISC=20,AUTO_INTRO=15;
+const AN={id:0,left:0,paused:false,sel:'',lab:null};
+function stopAuto(){clearInterval(AN.id);AN.id=0;AN.sel='';$$('[data-a="anpause"]').forEach(b=>b.remove())}
+function startAuto(sec,sel,lab){stopAuto();const b=$(sel);if(!b)return;AN.left=sec;AN.paused=false;AN.sel=sel;AN.lab=lab;
+ b.insertAdjacentHTML('beforebegin',`<button class="btn ghost sm" data-a="anpause" title="Detener o reanudar el avance automático">${IC.pause}Pausar</button>`);paintAuto();
+ AN.id=setInterval(()=>{if(AN.paused||ov.classList.contains('show')||document.hidden)return;AN.left--;paintAuto();if(AN.left<=0){stopAuto();next()}},1000)}
+function paintAuto(){const b=$(AN.sel);if(!b){stopAuto();return}b.firstChild.textContent=AN.lab(AN.paused?null:AN.left);const p=$('[data-a="anpause"]');if(p)p.innerHTML=AN.paused?`${IC.play}Reanudar`:`${IC.pause}Pausar`}
+function toggleAuto(){if(!AN.id)return;AN.paused=!AN.paused;paintAuto()}
+const autoOn=()=>!!S.cfg.time&&S.cfg.auto==='next';
+
 /* ── PROGRESS ── */
 function bar(){const b=$('#bar');if(S.phase==='setup'){b.style.width='0';return}const n=S.seq.length||1;const d=S.phase==='final'?n:S.i+(S.revealed?1:0);b.style.width=(d/n*100)+'%'}
 
 /* ── RENDER ROUTER ── */
-function render(anim){view.innerHTML='';const w=document.createElement('div');w.className=anim===false?'':'fade';w.style.cssText='position:absolute;inset:0';view.appendChild(w);
- ({setup:rSetup,lobby:rLobby,intro:rIntro,case:rCase,final:rFinal})[S.phase](w);bar();if(S.phase!=='setup'&&S.phase!=='case')publish();paintPresence();netMark(NET.ok)}
+function render(anim){stopAuto();view.innerHTML='';const w=document.createElement('div');w.className=anim===false?'':'fade';w.style.cssText='position:absolute;inset:0';view.appendChild(w);
+ ({setup:rSetup,lobby:rLobby,intro:rIntro,case:rCase,rank:rRank,final:rFinal})[S.phase](w);bar();if(S.phase!=='setup'&&S.phase!=='case')publish();paintPresence();netMark(NET.ok)}
 
 /* ── SETUP ── */
 function rSetup(w){
  const c=S.cfg;const nCases=CASES.filter(x=>c.blocks.includes(x.b)).length;
- const prog=resumable?`<div class="resume">${S.done?'Partida terminada: <b>resultados disponibles</b>':`Partida en curso: <b>caso ${S.i+1} de ${S.seq.length}</b>`}<button class="btn sm" data-a="resume">${IC.play}${S.done?'Ver resultados':'Continuar'}</button></div>`:'';
+ const prog=resumable?`<div class="resume">${S.done?'Partida terminada: <b>resultados disponibles</b>':S.lobby&&S.room?`Sala <b>${S.room.code}</b> abierta · el juego aún no empieza`:`Partida en curso: <b>caso ${S.i+1} de ${S.seq.length}</b>`}<button class="btn sm" data-a="resume">${IC.play}${S.done?'Ver resultados':'Continuar'}</button></div>`:'';
  w.innerHTML=`<div class="setup">
  <div class="hero">
   <div class="uni"><b>ECOTEC</b><span></span><i>MBA · Decisiones Estratégicas<br>y Marketing</i></div>
@@ -3209,7 +3257,8 @@ function rSetup(w){
    <div><h3>Repaso por bloque</h3><div class="seg">${[[true,'Sí'],[false,'No']].map(([v,t])=>`<button class="${c.intros===v?'on':''}" data-in="${v}">${t}</button>`).join('')}</div></div>
    <div><h3>Voto por celular (QR)</h3><div class="seg">${[[true,'Sí'],[false,'No']].map(([v,t])=>`<button class="${(c.mode==='ind'?v===true:c.qr===v)?'on':''}" data-qr="${v}" ${c.mode==='ind'?'disabled title="El modo individual siempre usa QR"':''}>${t}</button>`).join('')}</div></div>
   </div>
-  <div><h3>Tiempo por caso</h3><div class="seg">${[[0,'Libre'],[60,'60 s'],[90,'90 s'],[120,'2 min'],[180,'3 min']].map(([v,t])=>`<button class="${c.time===v?'on':''}" data-t="${v}">${t}</button>`).join('')}</div></div>
+  <div class="trow"><div><h3>Tiempo por caso</h3><div class="seg tight">${[[0,'Libre'],[60,'60 s'],[90,'90 s'],[120,'2 min'],[180,'3 min']].map(([v,t])=>`<button class="${c.time===v?'on':''}" data-t="${v}">${t}</button>`).join('')}</div></div>
+   <div><h3>Al terminar el tiempo</h3><div class="seg tight">${[['manual','Esperar'],['reveal','Revelar'],['next','Revelar y seguir']].map(([v,t])=>`<button class="${c.time&&c.auto===v?'on':''}" data-au="${v}" ${c.time?'':'disabled title="Elige un tiempo por caso para usar el avance automático"'} title="${v==='manual'?'Tú revelas y avanzas':v==='reveal'?'Se revela solo; tú pasas al siguiente':'Se revela solo y, tras 20 s de comentario, pasa al siguiente'}">${t}</button>`).join('')}</div></div></div>
   <div class="go"><div class="sum"><b>${nCases}</b> casos · ${c.blocks.length} bloque${c.blocks.length===1?'':'s'} · ~${Math.round(nCases*3)} min</div>
    <button class="btn" data-a="start" ${nCases?'':'disabled'}>Comenzar partida ${IC.arrow}</button></div>
  </div></div>`;
@@ -3219,6 +3268,7 @@ function rSetup(w){
   else if(d.a==='all'){c.blocks=BLOCKS.map(b=>b.id)}else if(d.a==='none'){c.blocks=[]}
   else if(d.b){c.blocks=c.blocks.includes(d.b)?c.blocks.filter(x=>x!==d.b):BLOCKS.map(b=>b.id).filter(x=>x===d.b||c.blocks.includes(x))}
   else if(d.md){if(d.md==='ind'&&!ONLINE){toast('El modo individual funciona al abrir el juego desde su dirección web (Netlify), no desde un archivo local.',5500);return}if(c.mode!==d.md)resumable=false;c.mode=d.md;if(c.mode==='ind')c.qr=true}
+  else if(d.au){c.auto=d.au}
   else if(d.o){c.order=d.o}else if(d.qr){c.qr=d.qr==='true';if(c.qr&&!/^https?:/.test(location.protocol)){c.qr=false;toast('El voto por QR funciona al abrir el juego desde su dirección web, no desde un archivo local.',5000)}}else if(d.in){c.intros=d.in==='true'}else if(d.t!==undefined){c.time=+d.t}
   else if(d.a==='start'){return start()}else if(d.a==='resume'){resumable=false;return resumeGame()}
   else return;
@@ -3233,12 +3283,12 @@ async function start(){const c=S.cfg;let room=null;const ind=c.mode==='ind';
    toast('No se pudo crear la sala QR. Se juega con votación manual.',5000)}}
  let seq=[];BLOCKS.forEach(b=>{if(c.blocks.includes(b.id))CASES.forEach((x,k)=>{if(x.b===b.id)seq.push(k)})});
  if(c.order==='mezcla'){for(let i=seq.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[seq[i],seq[j]]=[seq[j],seq[i]]}}
- Object.assign(S,{done:false,mode:ind?'ind':'team',players:[],seq,i:0,votes:{},hist:{},adj:{},intro:{},revealed:false,tab:'fb',room:room?{code:room.code,key:room.key}:null});resumable=false;NET.present={};
+ Object.assign(S,{done:false,mode:ind?'ind':'team',players:[],seq,i:0,votes:{},hist:{},adj:{},vts:{},rt:{},t0:{},intro:{},revealed:false,tab:'fb',room:room?{code:room.code,key:room.key}:null});resumable=false;NET.present={};
  if(S.room){S.phase='lobby';save();return go()}enterCase()}
-function resumeGame(){if(S.done){S.phase='final';save();return render()}if(S.room&&S.lobby){S.phase='lobby';save();return go()}const c=curCase();S.phase=(S.cfg.intros&&!S.intro[c.b])?'intro':'case';save();go()}
+function resumeGame(){if(S.done){S.phase='final';save();return render()}if(S.phase==='rank'){save();return go()}if(S.room&&S.lobby){S.phase='lobby';save();return go()}const c=curCase();S.phase=(S.cfg.intros&&!S.intro[c.b])?'intro':'case';save();go()}
 function enterCase(){const c=curCase();S.revealed=!!S.hist[S.i];
  S.phase=(S.cfg.intros&&!S.intro[c.b])?'intro':'case';save();go()}
-function go(){S.lobby=S.phase==='lobby';render();if(S.phase==='case'&&!S.revealed)timerStart();else{timerStop();if(S.phase==='case')publish()}}
+function go(){S.lobby=S.phase==='lobby';if(S.phase==='case'&&!S.revealed&&!S.t0[S.i]){S.t0[S.i]=Date.now();save()}render();if(S.phase==='case'&&!S.revealed)timerStart();else{timerStop();if(S.phase==='case')publish()}}
 
 /* ── DIAGRAMS ── */
 function optHTML(o,b,tag){const tg=tag||'button';
@@ -3339,10 +3389,10 @@ function rCase(w){const c=curCase(),b=BL[c.b];
 }
 function onCaseClick(e){const t=e.target.closest('[data-a],[data-v],[data-tab],.opt');if(!t)return;
  if(t.dataset.tab){S.tab=t.dataset.tab;save();const c=curCase(),b=BL[c.b];const lb=$('.lbody');lb.innerHTML=S.tab==='fb'?feedback(c,b):caseLeft(c,b);$$('.tabs button').forEach(x=>x.classList.toggle('on',x.dataset.tab===S.tab));return}
- if(t.dataset.v){if(S.revealed)return;const k=+t.closest('.tm').dataset.t;const v=S.votes[S.i]=S.votes[S.i]||{};v[k]=v[k]===t.dataset.v?undefined:t.dataset.v;if(!v[k])delete v[k];save();beep(880,.06,.05);refreshStrip();paintVotes();paintPresence();
+ if(t.dataset.v){if(S.revealed)return;const k=+t.closest('.tm').dataset.t;const v=S.votes[S.i]=S.votes[S.i]||{};v[k]=v[k]===t.dataset.v?undefined:t.dataset.v;if(!v[k])delete v[k];S.vts[S.i]=S.vts[S.i]||{};S.vts[S.i][k]=Date.now()+(NET.off||0);save();beep(880,.06,.05);refreshStrip();paintVotes();paintPresence();
   if(S.room){NET.local[k]=Date.now();post('/vote',{code:S.room.code,key:S.room.key,team:k,i:S.i,opt:v[k]||null}).then(()=>netMark(true)).catch(()=>netMark(false))}return}
  const a=t.dataset.a;
- if(a==='reveal')reveal();else if(a==='next')next();else if(a==='hint')toggleHint();else if(a==='board')openBoard();else if(a==='fs')fs();else if(a==='menu')openMenu();else if(a==='timer')timerToggle();else if(a==='qr')openQR();
+ if(a==='reveal')reveal();else if(a==='next')next();else if(a==='hint')toggleHint();else if(a==='board')openBoard();else if(a==='fs')fs();else if(a==='menu')openMenu();else if(a==='timer')timerToggle();else if(a==='qr')openQR();else if(a==='anpause')toggleAuto();
 }
 function refreshStrip(){const c=curCase(),b=BL[c.b];const old=$('.teams')||$('.indbar');if(!old)return;const d=document.createElement('div');d.innerHTML=teamStrip(b);old.replaceWith(d.firstChild);paintPresence()}
 function paintVotes(){if(IND())return;const v=S.votes[S.i]||{},tm=teams();$$('.dia .opt').forEach(el=>{const id=el.dataset.id;el.querySelector('.ov').innerHTML=tm.map((t,k)=>v[k]===id?`<span class="vd" style="--tc:${t.c}" title="${esc(t.name)}">${k+1}</span>`:'').join('')})}
@@ -3362,7 +3412,8 @@ async function reveal(){if(S.phase!=='case'||S.revealed||NET.revealing)return;
   try{NET.local={};await Promise.race([(async()=>{while(NET.busy)await new Promise(r=>setTimeout(r,100));NET.busy=true;try{await pollOnce()}finally{NET.busy=false}})(),new Promise(r=>setTimeout(r,3500))])}catch(e){netMark(false)}
   NET.revealing=false;if(rb)rb.classList.remove('busy');if(S.revealed)return}
  const c=curCase(),v=S.votes[S.i]||{};
- const before=totals();S.hist[S.i]=Object.fromEntries(parts().map(p=>[p.id,c.sc[v[p.id]]||0]));S.revealed=true;S.tab='fb';save();timerStop();
+ const before=totals();S.hist[S.i]=Object.fromEntries(parts().map(p=>[p.id,c.sc[v[p.id]]||0]));
+ {const t0=(S.t0[S.i]||Date.now())+(NET.off||0),vt=S.vts[S.i]||{},cap=T.total||600;S.rt[S.i]={};parts().forEach(p=>{if(S.hist[S.i][p.id]>0){const ts=vt[p.id];S.rt[S.i][p.id]=ts?Math.min(cap,Math.max(0,(ts-t0)/1000)):cap}})}S.revealed=true;S.tab='fb';save();timerStop();
  beep(523,.12,.08);setTimeout(()=>beep(784,.25,.08),120);
  const b=BL[c.b];$('.lbody').innerHTML=feedback(c,b);
  const l=$('.left');l.insertAdjacentHTML('afterbegin',`<div class="tabs"><button data-tab="fb" class="on">Retroalimentación</button><button data-tab="case">Planteamiento</button></div>`);
@@ -3370,13 +3421,14 @@ async function reveal(){if(S.phase!=='case'||S.revealed||NET.revealing)return;
  $('.right .dtitle em').textContent='Clic en “Siguiente” o barra espaciadora';
  const btn=$('[data-a="reveal"]');btn.outerHTML=`<button class="btn" data-a="next">${S.i+1>=S.seq.length?'Ver resultados':'Siguiente caso'} ${IC.arrow}</button>`;
  refreshStrip();paintReveal(true);bar();publish(true);
+ if(autoOn()){const last=S.i+1>=S.seq.length;startAuto(AUTO_DISC,'[data-a="next"]',n=>n==null?(last?'Ver resultados ':'Siguiente caso '):(last?`Resultados en ${n} s `:`Siguiente en ${n} s `))}
  const after=totals();$$('.tm-s').forEach((el,k)=>countUp(el,before[k],after[k]));
 }
 function countUp(el,a,b){if(a===b){el.textContent=b;return}const t0=performance.now(),d=900;el.textContent=a;(function f(n){const p=Math.min(1,(n-t0)/d);el.textContent=Math.round(a+(b-a)*(1-Math.pow(1-p,3)));if(p<1)requestAnimationFrame(f)})(t0)}
-function next(){if(S.phase==='intro'){S.intro[curCase().b]=true;S.phase='case';save();return go()}
+function next(){stopAuto();if(S.phase==='rank'){S.i++;S.tab='fb';return enterCase()}if(S.phase==='intro'){S.intro[curCase().b]=true;S.phase='case';save();return go()}
  if(S.phase!=='case')return;if(!S.revealed)return reveal();
  if(S.i+1>=S.seq.length){S.phase='final';S.done=true;save();timerStop();return render()}
- S.i++;S.tab='fb';enterCase()}
+ S.phase='rank';save();timerStop();render()}
 
 /* ── INTRO ── */
 function rIntro(w){const c=curCase(),b=BL[c.b];const n=S.seq.filter(k=>CASES[k].b===b.id).length;
@@ -3387,7 +3439,8 @@ function rIntro(w){const c=curCase(),b=BL[c.b];const n=S.seq.filter(k=>CASES[k].
   <div class="dwrap">${diagram(b,true)}</div></div>`;
  const tm=w.querySelector('.timer');if(tm)tm.classList.add('off');
  w.querySelector('[data-a="hint"]').style.display='none';
- w.addEventListener('click',e=>{const t=e.target.closest('[data-a]');if(!t)return;const a=t.dataset.a;if(a==='go')next();else if(a==='board')openBoard();else if(a==='fs')fs();else if(a==='menu')openMenu();else if(a==='qr')openQR()})}
+ w.addEventListener('click',e=>{const t=e.target.closest('[data-a]');if(!t)return;const a=t.dataset.a;if(a==='go')next();else if(a==='anpause')toggleAuto();else if(a==='board')openBoard();else if(a==='fs')fs();else if(a==='menu')openMenu();else if(a==='qr')openQR()});
+ if(autoOn())startAuto(AUTO_INTRO,'[data-a="go"]',n=>n==null?'Empezar bloque ':`Empieza en ${n} s `)}
 
 /* ── LOBBY ── */
 function rLobby(w){const ind=IND();
@@ -3396,40 +3449,68 @@ function rLobby(w){const ind=IND();
  <div class="lobby"><div><div class="eyebrow">Sala de juego · ${S.seq.length} casos · ${ind?'voto individual':'voto por equipos'}</div><h2 class="h2">Únanse desde<br>su celular</h2>
   <ol class="steps"><li><b>1</b><span>Escaneen el código QR con la cámara.</span></li>${ind?'<li><b>2</b><span>Escriban su nombre y apellido.</span></li><li><b>3</b><span>En cada caso voten desde el celular: cada alumno suma sus propios puntos.</span></li>':'<li><b>2</b><span>Elijan su equipo (pueden entrar varios celulares por equipo).</span></li><li><b>3</b><span>En cada caso voten desde el celular: vale el último voto del equipo.</span></li>'}</ol>
   ${ind?'<div class="pcount" id="pcount"></div><div class="pchips" id="pchips"></div>':`<div class="lteams">${teams().map((t,k)=>`<div class="lt" data-t="${k}" style="--tc:${t.c}"><i></i><span>${esc(t.name)}</span><em>Esperando…</em></div>`).join('')}</div>`}
-  <button class="btn" data-a="begin">Comenzar juego ${IC.arrow}</button></div>
+  <div style="display:flex;gap:14px;align-items:center"><button class="btn" data-a="begin">Comenzar juego ${IC.arrow}</button><button class="btn ghost" data-a="back" title="Volver a la configuración (la sala queda abierta)">${IC.back}Configuración</button></div></div>
  ${qrCard()}</div>`;
  if(ind)paintLobbyPlayers();
  w.addEventListener('click',e=>{const t=e.target.closest('[data-a]');if(!t)return;const a=t.dataset.a;
   if(a==='begin'){if(ind&&!(S.players||[]).length&&!t.dataset.sure){t.dataset.sure='1';t.firstChild.textContent='Comenzar sin alumnos ';toast('Aún no hay alumnos conectados. Vuelve a pulsar si igual quieres empezar.',4000);return}S.lobby=false;enterCase()}
+  else if(a==='back'){S.phase='setup';S.lobby=true;resumable=true;save();render()}
   else if(a==='fs')fs();else if(a==='menu')openMenu()});
  pollTick()}
 function paintLobbyPlayers(){const ch=$('#pchips'),pc=$('#pcount');if(!ch)return;const P=parts();
  pc.innerHTML=P.length?`<span>${P.length}</span> alumno${P.length===1?'':'s'} conectado${P.length===1?'':'s'}`:'';
  ch.innerHTML=P.length?P.map(p=>`<span class="pchip" style="--tc:${p.c}"><i></i>${esc(p.name)}</span>`).join(''):'<div class="empty">Esperando a los primeros alumnos…</div>';
  const b=$('[data-a="begin"]');if(b&&P.length&&b.dataset.sure){delete b.dataset.sure;b.firstChild.textContent='Comenzar juego '}}
+/* ── RANKING ENTRE CASOS ── */
+function rRank(w){const now=ranked(),prev=ranked(S.i-1),pr=Object.fromEntries(prev.map(o=>[o.id,o.r])),h=S.hist[S.i]||{},c=curCase(),b=BL[c.b];
+ const max=IND()?10:8,list=now.slice(0,max),mx=Math.max(100,...now.map(o=>o.s)),hgt=list.length>8?62:74,last=S.i+1>=S.seq.length;
+ const lead=now[0];const tie=now.length>1&&now[0].s===now[1].s&&now[0].s>0&&now[0].tb!==now[1].tb;
+ w.innerHTML=`<div class="hdr"><div class="brand"><b>Decide la estrategia</b><span>ECOTEC · MBA</span></div><span class="chip" style="--bc:${b.c}"><i>${b.n}</i>${b.name}</span><span class="count">Caso <b>${S.i+1}</b> / ${S.seq.length}</span><span class="sp"></span>
+  ${S.room?`<button class="ib qr" data-a="qr"><span class="ndot"></span>Sala <b>${S.room.code}</b></button>`:''}<button class="ib" data-a="board" title="Ajustar puntos">${IC.board}Marcador</button><button class="ib" data-a="fs">${IC.full}</button><button class="ib" data-a="menu">${IC.menu}</button></div>
+ <div class="rkscr"><div style="align-self:center"><div class="eyebrow">Así van · después de ${S.i+1} de ${S.seq.length} casos</div>
+  <h2 class="h2">${lead&&lead.s>0?esc(lead.name)+'<br>va a la cabeza':'Todo<br>por decidir'}</h2>
+  <p class="sub">${IND()?`${now.length} alumnos en juego.`:''} En caso de empate en puntos, va adelante quien respondió más rápido sus aciertos.</p>
+  ${tie?`<p class="tbnote">${esc(now[0].name)} y ${esc(now[1].name)} empatan en puntos: desempata el tiempo (${fmtT(now[0].tb)} vs ${fmtT(now[1].tb)}).</p>`:''}
+  <div class="foot"><button class="btn" data-a="go">${last?'Ver resultados ':'Siguiente caso '}${IC.arrow}</button></div></div>
+ <div class="lb" style="--h:${hgt}px">${list.map((o,k)=>{const d=h[o.id]||0,m=(pr[o.id]||o.r)-o.r;
+  return `<div class="lbr ${o.r===1&&o.s>0?'p1':''}" style="--tc:${o.c};animation-delay:${k*70}ms"><div class="fill" data-w="${Math.max(0,o.s)/mx*100}"></div><span class="ps">${o.r}</span><span class="nm"><i></i>${esc(o.name)}</span>
+   <span class="mv ${m>0?'up':m<0?'dn':''}">${S.i===0?'':m>0?'▲ '+m:m<0?'▼ '+(-m):'='}</span><span class="dl ${d===40?'acc':d?'':'z'}">${d?'+'+d:'+0'}</span><span class="sc" data-to="${o.s}" data-from="${o.s-d}">${o.s-d}</span></div>`}).join('')}
+  ${now.length>max?`<div class="lbmore">… y ${now.length-max} más</div>`:''}</div></div>`;
+ requestAnimationFrame(()=>requestAnimationFrame(()=>{w.querySelectorAll('.fill').forEach(f=>f.style.width=f.dataset.w+'%');w.querySelectorAll('.sc').forEach((el,k)=>setTimeout(()=>countUp(el,+el.dataset.from,+el.dataset.to),300+k*70))}));
+ w.addEventListener('click',e=>{const t=e.target.closest('[data-a]');if(!t)return;const a=t.dataset.a;if(a==='go')next();else if(a==='anpause')toggleAuto();else if(a==='board')openBoard();else if(a==='fs')fs();else if(a==='menu')openMenu();else if(a==='qr')openQR()});
+ if(autoOn())startAuto(8,'[data-a="go"]',n=>n==null?(last?'Ver resultados ':'Siguiente caso '):(last?`Resultados en ${n} s `:`Siguiente en ${n} s `))}
+function confetti(ms){if(matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches)return;const cv=document.createElement('canvas');cv.className='confetti';cv.width=1920;cv.height=1080;stage.appendChild(cv);
+ const x=cv.getContext('2d'),C=['#D2A445','#E8C77A','#63C795','#86AEE6','#EC9564','#AE9BE6','#F4F2EC','#EC7B70'],W=1920,H=1080;
+ const P=Array.from({length:260},()=>({x:Math.random()*W,y:-30-Math.random()*H*.7,vx:(Math.random()-.5)*5,vy:2+Math.random()*4,s:8+Math.random()*12,r:Math.random()*6,vr:(Math.random()-.5)*.3,c:C[Math.random()*C.length|0]}));
+ const t0=performance.now();(function f(t){const k=t-t0;x.clearRect(0,0,W,H);P.forEach(p=>{p.x+=p.vx;p.y+=p.vy;p.vy+=.04;p.vx*=.995;p.r+=p.vr;if(p.y>H+30&&k<ms-1800){p.y=-30;p.x=Math.random()*W;p.vy=2+Math.random()*3}
+  x.save();x.translate(p.x,p.y);x.rotate(p.r);x.fillStyle=p.c;x.fillRect(-p.s/2,-p.s/4,p.s,p.s/2);x.restore()});if(k<ms)requestAnimationFrame(f);else cv.remove()})(t0)}
+function fanfare(){[523,659,784,1047].forEach((f,i)=>setTimeout(()=>beep(f,i===3?.6:.18,.1),i*160))}
+
 /* ── FINAL ── */
 function stats(){const P=parts(),tot=totals();const per={},acc={};P.forEach(p=>{per[p.id]={};acc[p.id]={ok:0,n:0}});
  S.seq.forEach((ci,i)=>{const h=S.hist[i];if(!h)return;const b=CASES[ci].b;P.forEach(p=>{const pts=h[p.id]||0;const o=per[p.id][b]=per[p.id][b]||{p:0,n:0};o.p+=pts;o.n++;acc[p.id].n++;if(pts===100)acc[p.id].ok++})});
- const order=P.map(p=>({...p,s:tot[p.id]||0,ok:acc[p.id].ok,n:acc[p.id].n})).sort((a,b)=>b.s-a.s);let r=0;order.forEach((o,i)=>{if(i===0||o.s<order[i-1].s)r=i+1;o.r=r});
+ const order=ranked().map(o=>({...o,ok:acc[o.id].ok,n:acc[o.id].n}));
  let hard=null;S.seq.forEach((ci,i)=>{const h=S.hist[i];if(!h)return;const vals=P.map(p=>h[p.id]||0);if(!vals.length)return;const avg=vals.reduce((a,b)=>a+b,0)/vals.length;if(!hard||avg<hard.avg)hard={ci,avg}});
  return {order,per,hard}}
 function rFinal(w){const {order,per,hard}=stats();if(!order.length)order.push({name:'Sin participantes',s:0,r:1,c:'#A9B3C7',id:'-',ok:0,n:0});const top=[order[1],order[0],order[2]];const hts=[330,430,250];
  w.innerHTML=`<div class="hdr"><div class="brand"><b>Decide la estrategia</b><span>ECOTEC · MBA</span></div><span class="sp"></span>
   <button class="ib" data-a="csv">${IC.dl}Exportar resultados</button><button class="ib" data-a="board">${IC.board}Ajustar puntos</button><button class="ib" data-a="fs">${IC.full}</button><button class="ib" data-a="home">${IC.home}Nueva partida</button></div>
- <div class="final"><div><div class="eyebrow">Resultados finales</div><h2 class="h2" style="font-size:84px;margin-top:14px">${order[0].s>0?esc(order[0].name)+'<br>toma la mejor decisión':'Fin de la partida'}</h2>
+ <div class="final"><div>${order[0].s>0?`<span class="crown">${IC.trophy}${IND()?'Ganador':'Equipo ganador'}</span>`:'<div class="eyebrow">Resultados finales</div>'}<h2 class="h2" style="font-size:84px;margin-top:18px">${order[0].s>0?esc(order[0].name)+'<br>toma la mejor decisión':'Fin de la partida'}</h2>
+  ${order[1]&&order[0].s===order[1].s&&order[0].s>0?`<p class="tbnote">Empate en puntos con ${esc(order[1].name)}: gana por responder más rápido sus aciertos (${fmtT(order[0].tb)} vs ${fmtT(order[1].tb)}).</p>`:''}
   <div class="podium">${top.map((o,i)=>o?`<div class="pd" style="--tc:${o.c}"><div class="pn">${esc(o.name)}</div><div class="ps">${o.s}</div><div class="col" style="height:${hts[i]}px;animation-delay:${[.25,.5,0][i]}s">${o.r}</div></div>`:'<div></div>').join('')}</div></div>
   <div style="display:flex;flex-direction:column;min-height:0"><div class="rank">${order.map(o=>`<div class="rk" style="--tc:${o.c}"><b>${o.r}</b><span class="rn">${esc(o.name)}</span><span class="rs">${o.s}</span>
-   <div class="bb">${IND()?`<span>Decisiones óptimas: <b>${o.ok} de ${o.n}</b></span>`:BLOCKS.filter(b=>per[o.id]&&per[o.id][b.id]).map(b=>{const x=per[o.id][b.id];return `<span>${b.k}: <b>${Math.round(x.p/x.n)}%</b></span>`}).join('')}</div></div>`).join('')}</div>
+   <div class="bb">${o.tb?`<span>Tiempo de aciertos: <b>${fmtT(o.tb)}</b></span>`:''}${IND()?`<span>Decisiones óptimas: <b>${o.ok} de ${o.n}</b></span>`:BLOCKS.filter(b=>per[o.id]&&per[o.id][b.id]).map(b=>{const x=per[o.id][b.id];return `<span>${b.k}: <b>${Math.round(x.p/x.n)}%</b></span>`}).join('')}</div></div>`).join('')}</div>
   ${hard?(()=>{const c=CASES[hard.ci],b=BL[c.b],best=optsOf(b).find(o=>c.sc[o.id]===100);return `<div class="hard"><small>El caso más desafiante</small><h4>${esc(c.e)}</h4><p>${b.name} · promedio del grupo: <b>${Math.round(hard.avg)}%</b>. La decisión óptima era <b>${best.L} · ${best.t}</b>. ${c.key}</p></div>`})():''}
  </div></div>`;
- w.addEventListener('click',e=>{const t=e.target.closest('[data-a]');if(!t)return;const a=t.dataset.a;if(a==='csv')csv();else if(a==='board')openBoard();else if(a==='fs')fs();else if(a==='home'){S=Object.assign(fresh(),{cfg:S.cfg,room:null});resumable=false;save();render()}})}
+ if(order[0].s>0&&!NET.celebrated){NET.celebrated=true;setTimeout(()=>{confetti(7000);fanfare()},500)}
+ w.addEventListener('click',e=>{const t=e.target.closest('[data-a]');if(!t)return;const a=t.dataset.a;if(a==='csv')csv();else if(a==='board')openBoard();else if(a==='fs')fs();else if(a==='home'){NET.celebrated=false;S=Object.assign(fresh(),{cfg:S.cfg,room:null});resumable=false;save();render()}})}
 function csv(){const P=parts();const q=s=>'"'+String(s).replace(/"/g,'""')+'"';let rows=[];
  const dl=()=>{const blob=new Blob(['\ufeff'+rows.join('\r\n')],{type:'text/csv;charset=utf-8'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);
   a.download='decide-la-estrategia-resultados-'+new Date().toISOString().slice(0,10)+'.csv';document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},500)};
  const tot=totals();
  if(IND()){const cases=S.seq.map((ci,i)=>({ci,i}));
-  rows.push(['Alumno','Total','Ajustes',...cases.map(({ci,i})=>`${i+1}. ${CASES[ci].e}`)].map(q).join(';'));
-  ranked().forEach(o=>rows.push([o.name,tot[o.id]||0,(S.adj||{})[o.id]||0,...cases.map(({ci,i})=>{const v=(S.votes[i]||{})[o.id],h=S.hist[i];const op=optsOf(BL[CASES[ci].b]).find(x=>x.id===v);return h?`${op?op.L:'-'} (${h[o.id]||0})`:''})].map(q).join(';')));
+  rows.push(['Puesto','Alumno','Total','Tiempo aciertos (s)','Ajustes',...cases.map(({ci,i})=>`${i+1}. ${CASES[ci].e}`)].map(q).join(';'));
+  ranked().forEach(o=>rows.push([o.r,o.name,tot[o.id]||0,o.tb,(S.adj||{})[o.id]||0,...cases.map(({ci,i})=>{const v=(S.votes[i]||{})[o.id],h=S.hist[i];const op=optsOf(BL[CASES[ci].b]).find(x=>x.id===v);return h?`${op?op.L:'-'} (${h[o.id]||0})`:''})].map(q).join(';')));
   return dl()}
  rows.push(['N°','Bloque','Empresa','Óptima',...P.flatMap(t=>[t.name+' (voto)',t.name+' (pts)'])].map(q).join(';'));
  S.seq.forEach((ci,i)=>{const c=CASES[ci],b=BL[c.b],O=optsOf(b),best=O.find(o=>c.sc[o.id]===100),v=S.votes[i]||{},h=S.hist[i];
@@ -3449,7 +3530,7 @@ function openMenu(){ov.innerHTML=`<div class="panel" style="width:820px"><button
   ${S.room?`<button data-m="qr">${IC.qric}Mostrar código QR de la sala</button>`:''}
   <button data-m="board">${IC.board}Marcador y ajustes</button>
   <button data-m="home" class="danger">${IC.home}Terminar y volver a configuración</button></div>
-  <div class="keys"><kbd>Espacio / Enter</kbd><span>Revelar decisión · Siguiente caso</span><kbd>H</kbd><span>Mostrar pista</span><kbd>P</kbd><span>Pausar o reanudar el tiempo</span><kbd>R</kbd><span>Reiniciar el tiempo</span><kbd>M</kbd><span>Marcador</span><kbd>Q</kbd><span>Mostrar el QR de la sala</span><kbd>F</kbd><span>Pantalla completa</span><kbd>Esc</kbd><span>Cerrar ventanas</span></div></div>`;
+  <div class="keys"><kbd>Espacio / Enter</kbd><span>Revelar decisión · Siguiente caso</span><kbd>H</kbd><span>Mostrar pista</span><kbd>P</kbd><span>Pausar o reanudar el tiempo (o el avance automático)</span><kbd>R</kbd><span>Reiniciar el tiempo</span><kbd>M</kbd><span>Marcador</span><kbd>Q</kbd><span>Mostrar el QR de la sala</span><kbd>F</kbd><span>Pantalla completa</span><kbd>Esc</kbd><span>Cerrar ventanas</span></div></div>`;
  ov.classList.add('show')}
 ov.addEventListener('click',e=>{if(e.target===ov||e.target.closest('[data-x]'))return closeOv();const t=e.target.closest('button');if(!t)return;
  if(t.dataset.adj!==undefined){const k=t.dataset.adj;if(Array.isArray(S.adj))S.adj=Object.assign({},S.adj);S.adj[k]=(S.adj[k]||0)+ +t.dataset.d;save();openBoard();publish();if(IND()){if($('.indbar'))refreshStrip()}else{const s=$$('.tm-s')[+k];if(s)s.textContent=totals()[k]}return}
@@ -3465,7 +3546,7 @@ document.addEventListener('keydown',e=>{if(e.target.matches('input'))return;cons
  if(ov.classList.contains('show'))return;
  if(k===' '||k==='enter'||k==='arrowright'){if(S.phase==='setup')return;e.preventDefault();if(S.phase==='lobby'){S.lobby=false;enterCase();return}next();return}
  if(S.phase==='setup')return;
- if(k==='h'&&S.phase==='case')toggleHint();else if(k==='m')openBoard();else if(k==='q')openQR();else if(k==='f')fs();else if(k==='p')timerToggle();else if(k==='r'&&S.phase==='case'&&!S.revealed)timerStart()});
+ if(k==='h'&&S.phase==='case')toggleHint();else if(k==='m')openBoard();else if(k==='q')openQR();else if(k==='f')fs();else if(k==='p'){if(AN.id)toggleAuto();else timerToggle()}else if(k==='r'&&S.phase==='case'&&!S.revealed)timerStart()});
 
 /* resume: always land on setup with a "continuar" option */
 resumable=S.seq.length>0&&S.i<S.seq.length;S.phase='setup';

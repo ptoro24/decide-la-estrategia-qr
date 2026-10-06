@@ -155,7 +155,7 @@ function rName(msg){pill.innerHTML='';app.innerHTML=`<div class="fade"><div clas
 /* ── quién soy ── */
 function me(){if(!state)return null;if(IND())return myName?{id:device,name:myName,c:GOLD}:null;const t=state.teams&&team!=null?state.teams[team]:null;return t?{id:String(team),name:t.name,c:t.c}:null}
 function myScore(){const m=me();return m&&state.totals?(state.totals[m.id]||0):0}
-function rankList(){if(IND())return (state.rank||[]).map(o=>({...o,c:o.id===device?GOLD:'#A9B3C7'}));
+function rankList(){if(state.rank&&state.rank.length)return state.rank.map(o=>({...o,c:IND()?(o.id===device?GOLD:'#A9B3C7'):(o.c||'#A9B3C7')}));
  const tot=state.totals||{};const arr=(state.teams||[]).map((t,k)=>({...t,id:String(k),s:tot[k]||0})).sort((a,b)=>b.s-a.s);let r=0;arr.forEach((o,i)=>{if(i===0||o.s<arr[i-1].s)r=i+1;o.r=r});return arr}
 function renderPill(){const m=me();if(!m){pill.innerHTML='';return}
  pill.innerHTML=`<button class="tpill" id="tp" style="--tc:${m.c}" title="${IND()?'Cambiar nombre':'Cambiar de equipo'}"><i></i><span>${esc(m.name)}</span><b>${myScore()}</b></button>`}
@@ -225,18 +225,36 @@ function rReveal(){const m=me(),b=state.block||{},sc=state.sc||{};const v=ls.get
   <p class="muted" style="text-align:center;margin-top:18px">${IND()?'Tu puntaje':'Puntaje del equipo'}: <b style="color:var(--tc)">${myScore()}</b>${myR?` · vas en el <b style="color:var(--paper)">${myR.r}.º lugar</b> de ${rl.length}`:''}<br>El siguiente caso aparecerá solo.</p></div>`;
  const k=state.i+':'+code;if(lastRevealKey!==k){lastRevealKey=k;if(navigator.vibrate)navigator.vibrate(vv===100?[40,60,40]:30)}}
 
+/* ── pantalla: así van ── */
+function rRankP(){const m=me(),arr=rankList(),mine=arr.find(o=>o.id===m.id),d=(state.pts||{})[m.id]||0,pv=(state.prev||{})[m.id];const mv=pv&&mine?pv-mine.r:0;
+ app.innerHTML=`<div class="fade" style="--tc:${m.c}"><div class="eyebrow" style="margin-top:10px">Así van · caso ${state.i+1} de ${state.n}</div>
+  <h1>${mine?`Vas ${mine.r}.º`:'Así van'}</h1><p class="muted">${IND()?'Tienes':'Tu equipo tiene'} <b style="color:var(--tc)">${mine?mine.s:0}</b> puntos${d?` (<b style="color:var(--okL)">+${d}</b> en este caso)`:''}${mv>0?` · subiste ${mv} puesto${mv===1?'':'s'}`:mv<0?` · bajaste ${-mv} puesto${mv===-1?'':'s'}`:''}.</p>
+  <div class="rank">${arr.slice(0,5).map(o=>`<div class="rk ${o.id===m.id?'me':''}" style="--tc:${o.id===m.id?m.c:o.c}"><b>${o.r}</b><span>${esc(o.name)}</span><em>${o.s}</em></div>`).join('')}
+  ${mine&&mine.r>5?`<div class="muted" style="text-align:center">…</div><div class="rk me" style="--tc:${m.c}"><b>${mine.r}</b><span>${esc(mine.name)}</span><em>${mine.s}</em></div>`:''}</div>
+  <p class="muted" style="text-align:center;margin-top:18px">Empates: va adelante quien respondió más rápido sus aciertos.<br>El siguiente caso aparecerá solo.</p></div>`}
+
+/* ── confeti ── */
+function confetti(ms){if(matchMedia('(prefers-reduced-motion: reduce)').matches)return;const cv=document.createElement('canvas');cv.style.cssText='position:fixed;inset:0;width:100vw;height:100vh;pointer-events:none;z-index:50';
+ const W=cv.width=innerWidth,H=cv.height=innerHeight;document.body.appendChild(cv);const x=cv.getContext('2d'),C=['#D2A445','#E8C77A','#63C795','#86AEE6','#EC9564','#AE9BE6','#F4F2EC','#EC7B70'];
+ const P=Array.from({length:120},()=>({x:Math.random()*W,y:-20-Math.random()*H*.7,vx:(Math.random()-.5)*3,vy:1.5+Math.random()*3,s:5+Math.random()*8,r:Math.random()*6,vr:(Math.random()-.5)*.3,c:C[Math.random()*C.length|0]}));
+ const t0=performance.now();(function f(t){const k=t-t0;x.clearRect(0,0,W,H);P.forEach(p=>{p.x+=p.vx;p.y+=p.vy;p.vy+=.03;p.r+=p.vr;if(p.y>H+20&&k<ms-1500){p.y=-20;p.x=Math.random()*W;p.vy=1.5+Math.random()*2}
+  x.save();x.translate(p.x,p.y);x.rotate(p.r);x.fillStyle=p.c;x.fillRect(-p.s/2,-p.s/4,p.s,p.s/2);x.restore()});if(k<ms)requestAnimationFrame(f);else cv.remove()})(t0)}
+let celebrated=false;
+
 /* ── pantalla: final ── */
 function rFinal(){const m=me(),arr=rankList(),mine=arr.find(o=>o.id===m.id);const top=arr.slice(0,10);const inTop=top.some(o=>o.id===m.id);
  app.innerHTML=`<div class="fade" style="--tc:${m.c}"><div class="eyebrow" style="margin-top:10px">Resultados finales</div>
-  <h1>${mine?`${mine.r}.º lugar`:'Fin del juego'}</h1><p class="muted">${IND()?esc(m.name)+', terminaste':esc(m.name)+' terminó'} con <b style="color:var(--tc)">${mine?mine.s:0}</b> puntos${IND()?` · ${arr.length} participantes`:''}.</p>
+  <h1>${mine&&mine.r===1&&mine.s>0?(IND()?'¡Ganaste!':'¡Ganaron!'):mine?`${mine.r}.º lugar`:'Fin del juego'}</h1><p class="muted">${IND()?esc(m.name)+', terminaste':esc(m.name)+' terminó'} con <b style="color:var(--tc)">${mine?mine.s:0}</b> puntos${IND()?` · ${arr.length} participantes`:''}.</p>
   <div class="rank">${top.map(o=>`<div class="rk ${o.id===m.id?'me':''}" style="--tc:${o.id===m.id?m.c:o.c}"><b>${o.r}</b><span>${esc(o.name)}</span><em>${o.s}</em></div>`).join('')}
   ${mine&&!inTop?`<div class="muted" style="text-align:center">…</div><div class="rk me" style="--tc:${m.c}"><b>${mine.r}</b><span>${esc(mine.name)}</span><em>${mine.s}</em></div>`:''}</div>
-  <p class="muted" style="text-align:center;margin-top:22px">¡Gracias por jugar!</p></div>`}
+  <p class="muted" style="text-align:center;margin-top:22px">¡Gracias por jugar!</p></div>`;
+ if(mine&&mine.r<=3&&mine.s>0&&!celebrated){celebrated=true;confetti(mine.r===1?6000:3500);if(navigator.vibrate)navigator.vibrate([60,80,60,80,120])}}
 
 /* ── ciclo ── */
 function render(){if(!state)return;if(!me())return IND()?rName():rTeam();renderPill();
  if(state.phase==='case')return state.revealed?rReveal():rCase();
  if(state.phase==='final')return rFinal();
+ if(state.phase==='rank')return rRankP();
  return rWait()}
 async function poll(force){if(!code){rCode();return}if(polling&&!force)return;polling=true;
  try{const r=await api('/state?code='+encodeURIComponent(code));mark(true);
