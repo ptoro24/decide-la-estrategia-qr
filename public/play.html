@@ -159,7 +159,11 @@ function rankList(){if(IND())return (state.rank||[]).map(o=>({...o,c:o.id===devi
  const tot=state.totals||{};const arr=(state.teams||[]).map((t,k)=>({...t,id:String(k),s:tot[k]||0})).sort((a,b)=>b.s-a.s);let r=0;arr.forEach((o,i)=>{if(i===0||o.s<arr[i-1].s)r=i+1;o.r=r});return arr}
 function renderPill(){const m=me();if(!m){pill.innerHTML='';return}
  pill.innerHTML=`<button class="tpill" id="tp" style="--tc:${m.c}" title="${IND()?'Cambiar nombre':'Cambiar de equipo'}"><i></i><span>${esc(m.name)}</span><b>${myScore()}</b></button>`}
-function changeMe(){if(IND()){rName()}else{ls.del('de.team.'+code);team=null;rTeam()}}
+function changeMe(){if(IND()){rName()}else{ls.del('de.team.'+code);team=null;post('/leave',{code,device}).catch(()=>{});rTeam()}}
+/* presencia (modo equipos): señal cada 20 s mientras la página está abierta; al cerrarla, sale del equipo */
+function beat(){if(code&&state&&!IND()&&team!=null&&state.phase!=='final'&&!document.hidden)post('/join',{code,team,device}).catch(()=>{})}
+setInterval(beat,20000);
+addEventListener('pagehide',()=>{if(code&&team!=null&&state&&!IND()){try{navigator.sendBeacon('/api/leave',new Blob([JSON.stringify({code,device})],{type:'application/json'}))}catch(e){}}});
 
 /* ── pantalla: espera ── */
 function rWait(){const m=me(),b=state.block;
@@ -238,7 +242,7 @@ async function poll(force){if(!code){rCode();return}if(polling&&!force)return;po
  try{const r=await api('/state?code='+encodeURIComponent(code));mark(true);
   offset=r.serverNow-Date.now();const prev=state;const ns=r.state;
   if(!prev||ns.i!==prev.i||ns.phase!==prev.phase)errMsg='';
-  state=ns;tv=r.tv;nv=r.nv||0;
+  state=ns;tv=r.tv;nv=r.nv||0;if(!prev)beat();
   const typing=document.activeElement&&document.activeElement.tagName==='INPUT';
   if((state.v!==lastV||force)&&!typing){lastV=state.v;render()}
   else if(state.phase==='case'&&!state.revealed&&document.getElementById('st')){paintStatus();tickTimer();renderPill()}
@@ -246,7 +250,7 @@ async function poll(force){if(!code){rCode();return}if(polling&&!force)return;po
  finally{polling=false}}
 setInterval(()=>{if(!document.hidden)poll()},2500);
 setInterval(()=>{if(state&&state.phase==='case'&&!state.revealed&&document.getElementById('st')){tickTimer();if(closed())paintStatus()}},500);
-document.addEventListener('visibilitychange',()=>{if(!document.hidden)poll(true)});
+document.addEventListener('visibilitychange',()=>{if(!document.hidden){poll(true);beat()}});
 pill.addEventListener('click',e=>{if(e.target.closest('#tp')&&state&&state.phase!=='case')changeMe()});
 if(code){app.innerHTML='<div class="wait"><div class="pulse"></div><p class="muted">Conectando con la sala…</p></div>';poll(true)}else rCode();
 })();
